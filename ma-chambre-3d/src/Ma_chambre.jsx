@@ -4,11 +4,16 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Html } from '@react-three/drei'
 
+import { ComputerScreen } from './ordinateur/ComputerScreen'
+
+
+
 export function Model({ props}) {
   const { nodes } = useGLTF('/test1.glb');
   const [stat, setStat] = useState("global");
   const [ hovered, setHover] = useState(false);
   const [lookTarget] = useState(() => new THREE.Vector3(-0.63, 4.13, -1.49));
+  const [dummy] = useState(() => new THREE.Object3D());
 
   // 1. Chargement des textures de hachures
   const textures = useTexture([
@@ -26,6 +31,8 @@ export function Model({ props}) {
   })
 
   useFrame((state) => {
+    const vitesse = 0.030;
+
     if (stat === 'computer') {
       const ecranPos = new THREE.Vector3().copy(nodes.Ecran.position);
       const offset = new THREE.Vector3(3, 0, 0);
@@ -34,14 +41,32 @@ export function Model({ props}) {
       const cameraTargetPosition = new THREE.Vector3().copy(ecranPos).add(offset).add(offsetHeight);
       const cameraLookAt = new THREE.Vector3().copy(ecranPos).add(offsetHeight);
 
-      const vitesse = 0.030;
-
-      state.camera.position.lerp(cameraTargetPosition, vitesse); // Le corps se déplace
+      // 1. La caméra glisse vers l'écran
+      state.camera.position.lerp(cameraTargetPosition, vitesse);
+      // 2. Le point cible glisse vers l'écran
       lookTarget.lerp(cameraLookAt, vitesse);
-
+      // 3. La caméra regarde le point cible
       state.camera.lookAt(lookTarget);
+      
       state.camera.updateProjectionMatrix();
     }
+    
+    if (stat === 'global') {
+      const initialPosition = new THREE.Vector3(10.62, 8.36, 7.99);
+      const initialLookAt = new THREE.Vector3(-0.63, 4.13, -1.49);
+
+      // 1. La caméra glisse vers sa position de départ
+      state.camera.position.lerp(initialPosition, vitesse);
+      // 2. Le point cible glisse vers sa position de départ
+      lookTarget.lerp(initialLookAt, vitesse);
+      
+      // 3. LA CORRECTION EST LÀ : on regarde lookTarget, pas initialLookAt !
+      state.camera.lookAt(lookTarget);
+      
+      state.camera.updateProjectionMatrix();
+    }
+
+    
   });
 
   return (
@@ -89,15 +114,12 @@ export function Model({ props}) {
         {stat === 'computer' && (
         <Html
         transform
-        distanceFactor={1.5}
+        distanceFactor={0.75}
         position={[0, 0.803, 0]}
         rotation={[0, Math.PI / 2, 0]}
-        // On force l'échelle à être neutre (1/scale.x, 1/scale.y, 1/scale.z)
-        scale={[1 / nodes.Ecran.scale.x, 1 / nodes.Ecran.scale.y, 1 / nodes.Ecran.scale.z]}
+        
       >
-        <div className="screen-interface">
-          <h1>Bonjour vous êtes bien sur windows</h1>
-        </div>
+        <ComputerScreen onClose={() => setStat("global")} />
       </Html>
 )}
 

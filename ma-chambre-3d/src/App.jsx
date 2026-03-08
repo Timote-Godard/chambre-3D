@@ -4,6 +4,9 @@ import { OrbitControls, ContactShadows } from '@react-three/drei'
 import { Model } from './Ma_chambre' // Vérifie le chemin du fichier
 // On importera ton shader et ton modèle ici plus tard
 
+import { ComputerScreen } from './ordinateur/ComputerScreen'
+
+
 import * as THREE from 'three'
 import { Edges, shaderMaterial, useTexture } from '@react-three/drei'
 import { extend } from '@react-three/fiber'
@@ -119,10 +122,20 @@ extend({ HatchMaterial })
 export default function App() {
   const controlsRef = useRef()
 
+  const modeDesign = false;
+
+  if (modeDesign) {
+    return (
+      <div style={{ width: '100vw', height: '100vh', background: '#222' }}>
+         <ComputerScreen onClose={() => console.log("Retour cliqué !")} />
+      </div>
+    )
+  }
+
   return (
     <div style={{ width: '100vw', height: '100vh', background: '#111' }}>
 
-      <Canvas camera={{ position: [10.62, 8.36, 7.99], fov: 50, rotation: [-0.42, 0.83, 0.32], target: [-0.63, 4.13, -1.49] }}>
+      <Canvas camera={{ position: [10.62, 8.36, 7.99], fov: 50, rotation: [-0.42, 0.83, 0.32], target: [-0.63, 4.13, -1.49] }} dpr={[1, 1.5]}>
         
 
     <ambientLight intensity={1} />
