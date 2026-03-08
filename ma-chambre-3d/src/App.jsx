@@ -133,7 +133,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#111' }}>
+    <div style={{ width: '100vw', height: '100vh', background: '#111', touchAction: 'none' }}>
 
       <Canvas camera={{ position: [10.62, 8.36, 7.99], fov: 50, rotation: [-0.42, 0.83, 0.32], target: [-0.63, 4.13, -1.49] }} dpr={[1, 1.5]}>
         
@@ -141,6 +141,7 @@ export default function App() {
     <ambientLight intensity={1} />
     <directionalLight position={[10, 10, 10]} intensity={10} /> 
     <CameraLogger controlsRef={controlsRef}/>
+
 
     <Suspense fallback={null}>
 

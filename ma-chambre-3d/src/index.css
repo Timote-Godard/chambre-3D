@@ -23,3 +23,7 @@
     user-select: none; /* Évite de sélectionner le texte par erreur en cliquant */
     overflow: hidden;
   }
+
+  canvas {
+  cursor: inherit !important;
+}
