@@ -23,7 +23,7 @@ function CameraLogger({ controlsRef }) {
 
 function DynamicLighting() {
   // new Date().getHours() + new Date().getMinutes() / 60
-  const [time, setTime] = useState(20);
+  const [time, setTime] = useState(14);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -81,9 +81,6 @@ function DynamicLighting() {
     sunColor = "#7aa1d2"; 
     roomLightIntensity = 50; // Pleine puissance la nuit !
   }
-
-  // 🛠️ ASTUCE DE TEST :
-  // Décommente cette ligne et change l'heure (ex: 14, 19, 22) pour voir la lumière s'allumer !
   
 
   return (

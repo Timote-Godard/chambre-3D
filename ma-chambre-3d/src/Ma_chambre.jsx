@@ -71,7 +71,7 @@ export function Model({ props }) {
         onPointerOut={() => setHover("none")}
         onClick={() => setStat('computer')}
       >
-        <meshStandardMaterial color={hovered === "computer" ? "#ffeb3b" : "#333333"} />
+        <meshStandardMaterial color={hovered === "computer" && stat != 'computer' ? "#ffeb3b" : "#333333"} />
         {stat === 'computer' && (
           <Html transform distanceFactor={0.75} position={[0, 0.803, 0]} rotation={[0, Math.PI / 2, 0]}>
             <ComputerScreen onClose={() => setStat("global")} />
@@ -92,7 +92,7 @@ export function Model({ props }) {
           onClick={() => setStat('library')}
         >
           {/* On lui donne une couleur "bois" de base */}
-          <meshStandardMaterial color={hovered === "library" ? "#ffeb3b" : "#8B4513"} />
+          <meshStandardMaterial color={hovered === "library" && stat != 'library' ? "#ffeb3b" : "#8B4513"} />
         </mesh>
 
         {myGames.map((jeu, i) => {
