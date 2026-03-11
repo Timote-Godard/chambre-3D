@@ -21,65 +21,66 @@ function CameraLogger({ controlsRef }) {
   return null
 }
 
-function DynamicLighting() {
+function DynamicLighting({time}) {
   // new Date().getHours() + new Date().getMinutes() / 60
-  const [time, setTime] = useState(14);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      setTime(now.getHours() + now.getMinutes() / 60);
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     const now = new Date();
+  //     setTime(now.getHours() + now.getMinutes() / 60);
+  //   }, 60000);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   // --- MATHÉMATIQUES DU SOLEIL ---
-  const isDay = time >= 6 && time <= 20;
-  const theta = isDay ? ((time - 6) / 14) * Math.PI : 0;
-  
-  const radius = 20;
-  const sunX = isDay ? Math.cos(theta) * radius : 10;
-  const sunY = isDay ? Math.sin(theta) * radius : 15;
-  const sunZ = 10;
+  const isDay = time >= 6 && time < 20;
+  const daylightRatio = isDay ? (time - 6) / 14 : 0;
 
+  
+  
+  const sunY = isDay ? Math.sin(daylightRatio * Math.PI) * 15 : -5;
+  const sunZ = isDay ? Math.cos(daylightRatio * Math.PI) * 5 : 10;
   // --- VARIABLES DE LUMIÈRE ---
-  let bgColor = "#111111";
+
+  const PAPER = "#d9d5c1"; // Ton beige parchemin
+  const INK = "#1a2639";   // Ton bleu encre
+  let bgColor = isDay ? PAPER : "#0a0b10" ;
   let ambientIntensity = 0.2;
   let sunIntensity = 0;
   let sunColor = "#ffffff";
   
   // 💡 NOUVEAU : Notre ampoule de chambre !
   let roomLightIntensity = 0; 
-  let roomLightColor = "#ffeeb1"; // Une lumière chaude (tungstène)
+  let roomLightColor = "#e0f7fa"; // Une lumière chaude (tungstène)
 
   if (time >= 6 && time < 9) {
-    // Matin
-    bgColor = "#ffb347"; 
-    ambientIntensity = 0.4;
-    sunIntensity = 1.5;
-    sunColor = "#ffcc80";
-    roomLightIntensity = 0; // Éteinte
+    // Matin (Lavis froid et doux)
+    bgColor = "#d2d6d9"; // Un gris-bleu très papier
+    ambientIntensity = 0.5;
+    sunIntensity = 1.2;
+    sunColor = "#e2e8f0";
+    roomLightIntensity = 0; 
   } else if (time >= 9 && time < 18) {
-    // Journée
-    bgColor = "#87CEEB"; 
+    // Journée (Beige papier lumineux)
+    bgColor = "#e8e4d9"; 
     ambientIntensity = 0.7;
     sunIntensity = 2.5;
     sunColor = "#ffffff";
-    roomLightIntensity = 0; // Éteinte
+    roomLightIntensity = 0; 
   } else if (time >= 18 && time < 20) {
-    // Soir (Crépuscule)
-    bgColor = "#fd5e53"; 
+    // Soir (Sépia / Golden Hour)
+    bgColor = "#cda788"; // Un beige cuivré doux au lieu du rouge vif
     ambientIntensity = 0.4;
     sunIntensity = 1.5;
-    sunColor = "#ff9e80";
-    roomLightIntensity = 1; // On commence à allumer la lumière !
+    sunColor = "#ffcc80";
+    roomLightIntensity = 2; // Le spot s'allume doucement
   } else {
-    // Nuit
-    bgColor = "#0B0C10"; 
-    ambientIntensity = 0.1;
-    sunIntensity = 0.1; // La lune
+    // Nuit (Encre abyssale)
+    bgColor = "#0a0b10"; 
+    ambientIntensity = 0.05; // Très faible pour des ombres noires
+    sunIntensity = 0.2; // Juste un filet de lune depuis la fenêtre
     sunColor = "#7aa1d2"; 
-    roomLightIntensity = 50; // Pleine puissance la nuit !
+    roomLightIntensity = 3; // L'écran devient la star
   }
   
 
@@ -91,23 +92,24 @@ function DynamicLighting() {
       {/* LE SOLEIL / LA LUNE */}
       <directionalLight 
         castShadow 
-        position={[sunX, sunY, sunZ]} 
+        position={[5, sunY, sunZ]} 
         intensity={sunIntensity} 
-        color={sunColor}
+        color={PAPER}
         shadow-mapSize={[2048, 2048]} 
-        shadow-bias={-0.0001} 
-        shadow-normalBias={0.04} 
+        shadow-bias={-0.0005} 
+        shadow-normalBias={0.08}
       >
         <orthographicCamera attach="shadow-camera" args={[-15, 15, 15, -15, 0.1, 50]} />
       </directionalLight>
 
       {/* 💡 L'AMPOULE DE LA CHAMBRE */}
       <pointLight 
-        position={[-2, 7, 0]} // Placée en hauteur au centre de la pièce
+        position={[-8, 5, 1.2]} // 👈 J'ai avancé un peu le Z (1.2 au lieu de 0.84) pour le décoller de l'écran
         intensity={roomLightIntensity} 
         color={roomLightColor}
-        distance={15} // La lumière s'arrête doucement après 15 mètres
-        decay={2} // Atténuation réaliste de la lumière
+        distance={20} // L'écran n'éclaire pas très loin
+        decay={3} // La lumière s'estompe très vite dans le noir
+        castShadow
       />
     </>
   )
@@ -117,6 +119,7 @@ function DynamicLighting() {
 export default function App() {
   const controlsRef = useRef()
   const modeDesign = false;
+  const [time, setTime] = useState(14);
 
   if (modeDesign) {
     return (
@@ -130,13 +133,38 @@ export default function App() {
     // On met un background noir au div parent (le Canvas s'occupera de la couleur du ciel)
     <div style={{ width: '100vw', height: '100vh', background: '#000', touchAction: 'none' }}>
       
+      <div style={{
+        position: 'absolute',
+        top: '20px',
+        left: '20px',
+        zIndex: 9999, // Pour passer au-dessus de la 3D
+        background: 'magenta', // Couleur qui pique les yeux
+        border: '5px dashed yellow',
+        padding: '15px',
+        color: 'white',
+        fontWeight: 'bold',
+        fontFamily: 'monospace'
+      }}>
+        <label>🛠️ HEURE : {time.toFixed(1)}h</label>
+        <br />
+        <input 
+          type="range" 
+          min="0" 
+          max="23" 
+          step="1" 
+          value={time} 
+          onChange={(e) => setTime(parseFloat(e.target.value))} 
+          style={{ width: '200px', marginTop: '10px' }}
+        />
+      </div>
+
       <Canvas shadows camera={{ position: [10.62, 8.36, 7.99], fov: 50 }} dpr={[1, 1.5]}>
         
         {/* 👇 On remplace les anciennes lumières par notre composant magique ! 👇 */}
-        <DynamicLighting />
+        <DynamicLighting time={time} />
         
         <CameraLogger controlsRef={controlsRef}/>
-        <OrbitControls ref={controlsRef} />
+        {/* <OrbitControls ref={controlsRef} /> */}
 
         <Suspense fallback={null}>
           <Model position={[0, 0, 0]} scale={1}/>

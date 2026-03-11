@@ -1,9 +1,15 @@
 import React, { useState } from 'react'
-import { useGLTF, PresentationControls, Float, Html } from '@react-three/drei'
+import { useGLTF, PresentationControls, Float, Html, useTexture, Outlines, Edges } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
+
 import { ComputerScreen } from './ordinateur/ComputerScreen'
+
+const STYLE = {
+  paper: "#d9d5c1",
+  ink: "#1a2639"
+};
 
 export function Model({ props }) {
   const { nodes } = useGLTF('/test1.glb');
@@ -12,14 +18,21 @@ export function Model({ props }) {
   const [lookTarget] = useState(() => new THREE.Vector3(-0.63, 4.13, -1.49));
   const [hoveredGame, setHoveredGame] = useState(null);
   const [selectedGame, setSelectedGame] = useState(null);
+  
 
   const myGames = [
-    { id: 1, name: "Projet Alpha", url: "https://alpha.monsite.fr", color: "#e63946" },
-    { id: 2, name: "Projet Beta", url: "https://beta.monsite.fr", color: "#457b9d" },
-    { id: 3, name: "Projet Gamma", url: "https://gamma.monsite.fr", color: "#2a9d8f" },
+    { id: 1, name: "Projet Alpha", url: "https://alpha.monsite.fr", texture: "/textures/jackets/jacket_1.png" },
+    { id: 2, name: "Projet Beta", url: "https://beta.monsite.fr", texture: "/textures/jackets/jacket_1.png" },
+    { id: 3, name: "Projet Gamma", url: "https://gamma.monsite.fr", texture: "/textures/jackets/jacket_1.png"  },
   ];
 
   const boxGeometry = nodes.Jackette.geometry;
+
+  const texturesJacket = useTexture(myGames.map(game => game.texture));
+  texturesJacket.forEach(t => {
+    t.flipY = false; // Souvent nécessaire pour que l'image ne soit pas à l'envers
+    t.colorSpace = THREE.SRGBColorSpace;
+  });
 
   // 🧹 Plus besoin de charger les textures ici !
 
@@ -56,7 +69,9 @@ export function Model({ props }) {
         rotation={nodes.Decor_Fixe.rotation}
         scale={nodes.Decor_Fixe.scale}
       >
-        <meshStandardMaterial color="#cccccc" />
+        <meshStandardMaterial color={STYLE.paper} roughness={1} polygonOffset 
+  polygonOffsetFactor={-1}/>
+        <Outlines thickness={2} color={STYLE.ink} angle={0} />
       </mesh>
 
       {/* 🖥️ L'ÉCRAN */}
@@ -72,11 +87,10 @@ export function Model({ props }) {
         onClick={() => setStat('computer')}
       >
         <meshStandardMaterial color={hovered === "computer" && stat != 'computer' ? "#ffeb3b" : "#333333"} />
-        {stat === 'computer' && (
+        <Outlines thickness={2} color={STYLE.ink} />
           <Html transform distanceFactor={0.75} position={[0, 0.803, 0]} rotation={[0, Math.PI / 2, 0]}>
             <ComputerScreen onClose={() => setStat("global")} />
           </Html>
-        )}
       </mesh>
 
       {/* 📚 LA BIBLIOTHEQUE */}
@@ -93,6 +107,7 @@ export function Model({ props }) {
         >
           {/* On lui donne une couleur "bois" de base */}
           <meshStandardMaterial color={hovered === "library" && stat != 'library' ? "#ffeb3b" : "#8B4513"} />
+          <Outlines thickness={2} color={STYLE.ink} />  
         </mesh>
 
         {myGames.map((jeu, i) => {
@@ -106,9 +121,14 @@ export function Model({ props }) {
               visible={!isSelected}
               onPointerOver={(e) => { e.stopPropagation(); setHoveredGame(jeu.id) }}
               onPointerOut={() => setHoveredGame(null)}
-              onClick={(e) => { e.stopPropagation(); setSelectedGame(jeu); }}
+              onClick={(e) => { e.stopPropagation(); {stat === "library" && (setSelectedGame(jeu)) } }}
             >
-              <meshStandardMaterial color={isHovered ? "#ffeb3b" : jeu.color} />
+              <Outlines thickness={2} color={STYLE.ink} />
+              <meshStandardMaterial 
+            map={texturesJacket[i]} 
+            color={STYLE.paper} // Teinte la texture en beige parchemin
+            roughness={1} 
+          />
             </mesh>
           )
         })}
@@ -138,7 +158,12 @@ export function Model({ props }) {
                 onPointerUp={() => { document.body.style.cursor = 'grab'; }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <meshStandardMaterial color={selectedGame.color} />
+                <Outlines thickness={2} color={STYLE.ink} />
+                <meshStandardMaterial 
+           map={texturesJacket[myGames.findIndex(g => g.id === selectedGame.id)]} 
+           color={STYLE.paper} // Teinte la texture en beige parchemin
+            roughness={1} 
+          />
               </mesh>
             </Float>
           </PresentationControls>
