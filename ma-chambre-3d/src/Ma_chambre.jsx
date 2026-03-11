@@ -71,8 +71,22 @@ export function Model({ props }) {
       >
         <meshStandardMaterial color={STYLE.paper} roughness={1} polygonOffset 
   polygonOffsetFactor={-1}/>
-        <Outlines thickness={2} color={STYLE.ink} angle={0} />
+        <Outlines thickness={2} color={STYLE.ink} angle={0} depthTest={true}/>
       </mesh>
+
+      <mesh 
+        receiveShadow // 👈 Reçoit les ombres des autres objets
+        castShadow    // 👈 Projette sa propre ombre (si tu as des étagères au mur)
+        geometry={nodes.Drap.geometry}
+        position={nodes.Drap.position}
+        rotation={nodes.Drap.rotation}
+        scale={nodes.Drap.scale}
+      >
+        <meshStandardMaterial color={STYLE.paper} roughness={1} polygonOffset 
+        polygonOffsetFactor={-30}/>
+        <Outlines thickness={2} color={STYLE.ink} angle={0} depthTest={true}/>
+      </mesh>
+
 
       {/* 🖥️ L'ÉCRAN */}
       <mesh 
