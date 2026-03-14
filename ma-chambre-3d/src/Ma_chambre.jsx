@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { useGLTF, PresentationControls, Float, Html, useTexture, Outlines, Edges } from '@react-three/drei'
+import React, { useState, useEffect } from 'react'
+import { useGLTF, PresentationControls, Float, Html, useTexture, Outlines, Box } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
@@ -33,6 +33,7 @@ export function Model({ props }) {
     t.flipY = false; // Souvent nécessaire pour que l'image ne soit pas à l'envers
     t.colorSpace = THREE.SRGBColorSpace;
   });
+  
 
   // 🧹 Plus besoin de charger les textures ici !
 
@@ -100,50 +101,88 @@ export function Model({ props }) {
         onPointerOut={() => setHover("none")}
         onClick={() => setStat('computer')}
       >
-        <meshStandardMaterial color={hovered === "computer" && stat != 'computer' ? "#ffeb3b" : "#333333"} />
-        <Outlines thickness={2} color={STYLE.ink} />
-          <Html transform distanceFactor={0.75} position={[0, 0.803, 0]} rotation={[0, Math.PI / 2, 0]}>
+        <meshStandardMaterial color={hovered === "computer" || stat === "computer" ? STYLE.ink : STYLE.paper} />
+        <Outlines thickness={hovered === "computer" ? 4 : 2} color={STYLE.ink} />
+        <Html 
+          pointerEvents={stat === "computer" ? "auto" : "none"}  
+          transform 
+          distanceFactor={0.75} 
+          position={[0, 0.803, 0]} 
+          rotation={[0, Math.PI / 2, 0]}
+        >
+          {/* On ajoute une div autour de ton écran pour gérer l'animation */}
+          <div 
+            style={{ 
+              opacity: (hovered === "computer" || stat === "computer") ? 1 : 0,
+              // Sécurité supplémentaire : on désactive les clics si c'est juste survolé ou caché
+              pointerEvents: stat === "computer" ? "auto" : "none" 
+            }}
+          >
             <ComputerScreen onClose={() => setStat("global")} />
-          </Html>
+          </div>
+        </Html>
       </mesh>
 
       {/* 📚 LA BIBLIOTHEQUE */}
       <group position={nodes.Bibliotheque.position}>
+        <Box
+          scale={[0.9, 1.8, 4.33]} 
+          position={[0.5, 0, 0.25]} // On le centre un peu
+          onPointerOver={() => setHover("library")}
+          onPointerOut={() => setHover("none")}
+          onClick={() => setStat('library')}
+        >
+          <meshBasicMaterial transparent opacity={0} />
+        </Box>
+
         <mesh 
           castShadow
           receiveShadow
           geometry={nodes.Bibliotheque.geometry}
           rotation={nodes.Bibliotheque.rotation}
           scale={nodes.Bibliotheque.scale}
-          onPointerOver={() => setHover("library")}
-          onPointerOut={() => setHover("none")}
-          onClick={() => setStat('library')}
         >
           {/* On lui donne une couleur "bois" de base */}
-          <meshStandardMaterial color={hovered === "library" && stat != 'library' ? "#ffeb3b" : "#8B4513"} />
+          <meshStandardMaterial color={hovered === "library" || stat === 'library' ? "#8B4513" : STYLE.paper} />
           <Outlines thickness={2} color={STYLE.ink} />  
         </mesh>
 
         {myGames.map((jeu, i) => {
           const isHovered = hoveredGame === jeu.id;
           const isSelected = selectedGame?.id === jeu.id;
+          
           return (
-            <mesh 
-              key={i} 
-              geometry={boxGeometry} 
+            // 👇 1. LE GROUPE gère la position et les interactions
+            <group 
+              key={i}
               position={[0, 0, 0.5 * i]}
               visible={!isSelected}
               onPointerOver={(e) => { e.stopPropagation(); setHoveredGame(jeu.id) }}
               onPointerOut={() => setHoveredGame(null)}
-              onClick={(e) => { e.stopPropagation(); {stat === "library" && (setSelectedGame(jeu)) } }}
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                if (stat === "library") setSelectedGame(jeu); 
+              }}
             >
-              <Outlines thickness={2} color={STYLE.ink} />
-              <meshStandardMaterial 
-            map={texturesJacket[i]} 
-            color={STYLE.paper} // Teinte la texture en beige parchemin
-            roughness={1} 
-          />
-            </mesh>
+              {/* 📦 2. LE PAPIER (Base) */}
+              <mesh geometry={boxGeometry}>
+                <Outlines thickness={2} color={STYLE.ink} />
+                <meshStandardMaterial color={STYLE.paper} roughness={1} />
+              </mesh>
+
+              {/* 🎨 3. LA TEXTURE (Surcouche) */}
+              <mesh 
+                geometry={boxGeometry}
+                visible={hovered === "library" || stat === "library"}
+                scale={1.01} // J'ai mis 1.01 pour être sûr à 100% que ça passe devant
+              >
+                <meshStandardMaterial 
+                  map={texturesJacket[i]} 
+                  color="#ffffff" 
+                  roughness={1} 
+                />
+              </mesh>
+            </group>
           )
         })}
       </group>
