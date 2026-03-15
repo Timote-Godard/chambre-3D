@@ -3,6 +3,7 @@ import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { Model } from './Ma_chambre' 
 import { ComputerScreen } from './ordinateur/ComputerScreen'
+import { PhoneScreen } from './ordinateur/PhoneScreen'
 
 function CameraLogger({ controlsRef }) {
   const { camera } = useThree()
@@ -118,13 +119,13 @@ function DynamicLighting({time}) {
 
 export default function App() {
   const controlsRef = useRef()
-  const modeDesign = false;
+  const modeDesign = true;
   const [time, setTime] = useState(14);
 
   if (modeDesign) {
     return (
       <div style={{ width: '100vw', height: '100vh', background: '#222' }}>
-         <ComputerScreen onClose={() => console.log("Retour cliqué !")} />
+         <PhoneScreen onClose={() => console.log("Retour cliqué !")} />
       </div>
     )
   }

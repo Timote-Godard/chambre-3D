@@ -10,12 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@lordicon/react": "^1.11.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@react-three/postprocessing": "^3.0.4",
     "@splinetool/react-spline": "^4.1.0",
     "@splinetool/runtime": "^1.12.66",
     "@tailwindcss/vite": "^4.2.1",
+    "lottie-web": "^5.13.0",
+    "lucide-react": "^0.577.0",
     "postprocessing": "^6.38.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

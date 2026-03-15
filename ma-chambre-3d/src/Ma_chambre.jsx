@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { useGLTF, PresentationControls, Float, Html, useTexture, Outlines, Box } from '@react-three/drei'
+import { useGLTF, PresentationControls, Float, Html, useTexture, Outlines, Box, Center } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
 
 import { ComputerScreen } from './ordinateur/ComputerScreen'
+import { PhoneScreen } from './ordinateur/PhoneScreen'
 
 const STYLE = {
   paper: "#d9d5c1",
@@ -18,7 +19,6 @@ export function Model({ props }) {
   const [lookTarget] = useState(() => new THREE.Vector3(-0.63, 4.13, -1.49));
   const [hoveredGame, setHoveredGame] = useState(null);
   const [selectedGame, setSelectedGame] = useState(null);
-  const [phoneSelected, setPhoneSelected] = useState(false);
 
   
 
@@ -59,8 +59,8 @@ export function Model({ props }) {
       state.camera.lookAt(lookTarget);
     }
     if (stat === 'phone') {
-      state.camera.position.lerp(new THREE.Vector3(-7.18, 5.35, 2.92), vitesse);
-      lookTarget.lerp(new THREE.Vector3(-7.49, 1.23, 2.92), vitesse);
+      state.camera.position.lerp(new THREE.Vector3(-6.18, 5.35, 2.92), vitesse);
+      lookTarget.lerp(new THREE.Vector3(-8.49, 1.23, 2.92), vitesse);
       state.camera.lookAt(lookTarget);
     }
   });
@@ -132,64 +132,7 @@ export function Model({ props }) {
 
 
       {/* 📱 LE TÉLÉPHONE */}
-      {phoneSelected ? (
-        <group position={nodes.Telephone.position}>
-          
-          {/* 🛡️ LE MUR DE VERRE (Pour cliquer à côté et fermer) */}
-          <mesh 
-            position={[-0.5, 0, 0]} 
-            rotation={[0, Math.PI / 2, 0]} 
-            onPointerEnter={() => { document.body.style.cursor = 'alias'; }}
-            onPointerLeave={() => { document.body.style.cursor = 'auto'; }}
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              if (e.delta <= 2) {
-                // 👇 On ferme bien l'état du téléphone, pas celui des jeux
-                setPhoneSelected(false); 
-                setStat('none'); 
-              }
-            }}
-          >
-            <planeGeometry args={[70, 50]} />
-            <meshBasicMaterial transparent opacity={0} side={THREE.DoubleSide} />
-          </mesh>
 
-          {/* 📱 LE TÉLÉPHONE INTERACTIF (Flottant) */}
-          <PresentationControls cursor={false} config={{ mass: 2, tension: 500 }} snap rotation={[0, 0.3, 0]}>
-            <Float speed={5} rotationIntensity={0.5} floatIntensity={0.5}>
-              {nodes.Telephone.children.map((morceau, index) => (
-                <group key={index} position={morceau.position} rotation={morceau.rotation} scale={morceau.scale}>
-                  
-                  {/* 🤍 JUMEAU PAPIER (Caché quand sélectionné) */}
-                  <mesh geometry={morceau.geometry} visible={hovered !== "phone" && stat !== "phone"}>
-                    <meshStandardMaterial color={STYLE.paper} roughness={1} />
-                    <Outlines thickness={2} color={STYLE.ink} />
-                  </mesh>
-
-                  {/* 🎨 JUMEAU COULEUR (Toujours visible ici car stat === "phone") */}
-                  <mesh geometry={morceau.geometry} material={morceau.material} visible={hovered === "phone" || stat === "phone"}>
-                    <Outlines thickness={2} color={STYLE.ink} />
-                  </mesh>
-
-                </group>
-              ))}
-            </Float>
-          </PresentationControls>
-
-          {/* 🔗 LE BOUTON HTML */}
-          <Html position={[0, -1.5, 0]} center>
-            {/* ⚠️ Attention : Assure-toi que selectedGame existe bien quand on clique sur le téléphone, 
-                sinon mets plutôt un lien direct genre 'mailto:ton@email.com' ou ton GitHub ! */}
-            <button 
-              onClick={() => window.open(selectedGame?.url || 'https://github.com/ton-profil', '_blank')}
-              className="bg-white w-60 text-black px-6 py-2 font-bold border-4 border-black hover:bg-yellow-400 transition-colors"
-            >
-              CONTACT / PROJET
-            </button>
-          </Html>
-        </group>
-
-      ) : (
 
         /* -------------------------------------------------------- */
         /* 📱 TÉLÉPHONE SUR LE BUREAU (Statique)                    */
@@ -203,8 +146,7 @@ export function Model({ props }) {
             onPointerOver={(e) => { e.stopPropagation(); setHover("phone"); }}
             onPointerOut={() => setHover("none")}
             onClick={(e) => { 
-              e.stopPropagation(); 
-              stat === "phone" ? setPhoneSelected(true) : setStat('phone'); 
+              e.stopPropagation(); setStat('phone'); 
             }}
           >
             <meshBasicMaterial transparent opacity={0} />
@@ -227,8 +169,28 @@ export function Model({ props }) {
 
             </group>
           ))}
+
+          <Html 
+          pointerEvents={stat === "phone" ? "auto" : "none"}  
+          transform 
+          distanceFactor={0.7} 
+          position={[-0.02, 0, 0.005]} 
+          rotation={[Math.PI / 2, 0, Math.PI / 2]}
+        >
+          {/* On ajoute une div autour de ton écran pour gérer l'animation */}
+          <div 
+            style={{ 
+              opacity: (hovered === "phone" || stat === "phone") ? 1 : 0,
+              // Sécurité supplémentaire : on désactive les clics si c'est juste survolé ou caché
+              pointerEvents: stat === "phone" ? "auto" : "none" 
+            }}
+          >
+            <PhoneScreen onClose={() => setStat("global")} />
+          </div>
+        </Html>
+
+          
         </group>
-      )}
 
       {/* 📚 LA BIBLIOTHEQUE */}
       <group position={nodes.Bibliotheque.position}>
