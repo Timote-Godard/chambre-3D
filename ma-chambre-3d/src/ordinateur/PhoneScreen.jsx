@@ -1,4 +1,6 @@
-import { Wifi, BatteryMedium, Signal } from 'lucide-react';
+import React, { useState } from 'react';
+import { Wifi, BatteryMedium, Signal, ChevronLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import AnimatedIcon from './AnimatedIcon';
 import Meteo from './widget/Meteo';
 import Bourse from './widget/Bourse';
@@ -22,7 +24,45 @@ import discordIcon from "../assets/IconApp/discord.json";
 import twitchIcon from "../assets/IconApp/twitch.json";
 import folderIcon from "../assets/IconApp/folder.json";
 
+// Importations des composants apps
+import Camera from '../app/Camera';
+import Horloge from '../app/Horloge';
+import Maps from '../app/Maps';
+import Galerie from '../app/Galerie';
+import Document from '../app/Document';
+import Music from '../app/Music';
+import Cadeau from '../app/Cadeau';
+import Parametres from '../app/Parametres';
+import Internet from '../app/Internet';
+import Note from '../app/Note';
+import Coeur from '../app/Coeur';
+import Contact from '../app/Contact';
+import Banque from '../app/Banque';
+import Discord from '../app/Discord';
+import Twitch from '../app/Twitch';
+import Dossier from '../app/Dossier';
+
+const appComponents = {
+    "Camera": Camera,
+    "Horloge": Horloge,
+    "Maps": Maps,
+    "Galerie": Galerie,
+    "Document": Document,
+    "Music": Music,
+    "Cadeau": Cadeau,
+    "Paramètres": Parametres,
+    "Internet": Internet,
+    "Note": Note,
+    "Coeur": Coeur,
+    "Contact": Contact,
+    "Banque": Banque,
+    "Discord": Discord,
+    "Twitch": Twitch,
+    "Dossier": Dossier
+};
+
 export function PhoneScreen({ onClose }) {
+    const [selectedApp, setSelectedApp] = useState(null);
 
     const hour = new Date().getHours();
     const minute = new Date().getMinutes();
@@ -59,96 +99,125 @@ export function PhoneScreen({ onClose }) {
                         {name:"Dossier", json: folderIcon, color:"bg-orange-500"}
     ]
 
+    const SelectedAppComponent = selectedApp ? appComponents[selectedApp] : null;
 
     return (
         <div 
-            className="bg-gray-700 pointer-events-auto shadow-inner"
+            className="bg-gray-700 pointer-events-auto shadow-inner relative"
             style={{
-            // 2. DIMENSIONS FIXES (Ajuste pour que ça remplisse la largeur/hauteur de l'écran 3D)
-            width: '180px',
-            height: '380px',
-            
-            // 3. LA MAGIE DES ARRONDIS (Ajuste cette valeur pour coller aux courbes de ton 3D)
-            clipPath: 'inset(0% round 20px)',
-            
-            // 4. LE SECRET ABSOLU : Empêche le contenu (images, textes, scroll) 
-            // de dépasser des coins arrondis !
-            overflow: 'hidden', 
-        
+                width: '180px',
+                height: '380px',
+                clipPath: 'inset(0% round 20px)',
+                overflow: 'hidden', 
             }}
         >
-    {/* CONTENU DE TON ÉCRAN (ex: Iframe, Composants React, Menu...) */}
-    <div className="w-full h-full overflow-y-auto bg-black">
-      
-      {/* Une fausse encoche/Dynamic Island si tu veux pousser le réalisme ! */}
-      
-      
-      {/* contenu principal */}
-      <div className="flex flex-col p-1 bg-gray-100 h-full"> 
+            <div className="w-full h-full bg-black relative flex flex-col">
+                {/* Barre d'état (toujours au-dessus) */}
+                
+                <div 
+                        className=" absolute left-1/2 -translate-x-1/2 translate-y-1/16  w-16 h-5 bg-black rounded-full z-[100]"
+                    ></div>
 
-        {/* heure, etc */}
-            <div className="relative mb-5 flex flex-row justify-between items-center w-full"> 
-    
-                {/* 1. HEURE (À gauche) */}
-                <h1 className="text-[10px] pl-3">{hour}:{minute < 10 ? "0" + minute : minute}</h1>
-
-                {/* 2. DYNAMIC ISLAND (Centrée de force) */}
-                <div className="absolute left-1/2 -translate-x-1/2  w-16 h-5 bg-black rounded-full"></div>
-
-                {/* 3. ICONES (À droite) */}
-                <div className="flex flex-row pr-1 items-center gap-[1px]">
-                    <Signal size={12} />
-                    <Wifi size={12} />
-                    <BatteryMedium size={14} />
+                <div className="flex-1 relative bg-gray-100 overflow-hidden">
+                    <div className="relative pt-1 px-1 bg-slate-100 flex flex-row justify-between items-center w-full z-[10] pointer-events-none"> 
+                    <h1 className="text-[10px] pl-3 text-black">{hour}:{minute < 10 ? "0" + minute : minute}</h1>
+                    
+                    <div className="flex flex-row pr-1 items-center gap-[1px] text-black">
+                        <Signal size={12} />
+                        <Wifi size={12} />
+                        <BatteryMedium size={14} />
+                    </div>
                 </div>
 
-            </div>
- 
-        {/* app, icones */}
-        <div className="grid gap-y-2 grid-cols-2">
-            {listApp.map((app,index) => (
-                app.widget===true ? (
-                    <div className="ml-auto mr-auto  flex flex-col gap-y-[1px]  items-center">
-                        {app.type === "weather" && <Meteo />}
-                        {app.type === "money" && <Bourse />}
-                        {app.type === "calendar" && <Calendrier />} 
-                        
-                    <h1 className="text-[8px]">{app.name}</h1>
-                    </div>
-                )
-                :
-                (
-                    <div className='grid grid-cols-2 gap-y-[1px] '> 
-                        {app.content.map((uniqueApp, appIndex) => (
-
-                            <div className="flex flex-col items-center">
-                                <div className={`${uniqueApp.color} w-[30px] h-[30px] rounded-[22%] flex items-center justify-center shadow-sm`}>
-                                    <AnimatedIcon icon={uniqueApp.json} size={25} />
+                    <AnimatePresence>
+                        {!selectedApp && (
+                            <motion.div 
+                                key="home-screen"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="w-full h-full p-1 pt-4 flex flex-col"
+                            >
+                                <div className="grid gap-y-2 grid-cols-2">
+                                    {listApp.map((app, index) => (
+                                        app.widget === true ? (
+                                            <div key={index} className="ml-auto mr-auto flex flex-col gap-y-[2px] items-center">
+                                                {app.type === "weather" && <Meteo />}
+                                                {app.type === "money" && <Bourse />}
+                                                {app.type === "calendar" && <Calendrier />} 
+                                                <h1 className="text-[8px]">{app.name}</h1>
+                                            </div>
+                                        ) : (
+                                            <div key={index} className='grid grid-cols-2 gap-y-[2px]'> 
+                                                {app.content.map((uniqueApp, appIndex) => (
+                                                    <div 
+                                                        key={appIndex} 
+                                                        className="flex flex-col items-center cursor-pointer"
+                                                        onClick={() => setSelectedApp(uniqueApp.name)}
+                                                    >
+                                                        <motion.div 
+                                                            layoutId={`app-container-${uniqueApp.name}`}
+                                                            className={`${uniqueApp.color} w-[30px] h-[30px] rounded-[22%] flex items-center justify-center shadow-sm overflow-hidden`}
+                                                        >
+                                                            <AnimatedIcon icon={uniqueApp.json} size={25} />
+                                                        </motion.div>
+                                                        <h1 className="text-[8px] mt-[1px]">{uniqueApp.name}</h1>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )
+                                    ))}
                                 </div>
-                                <h1 className="text-[8px]">{uniqueApp.name}</h1>
-                            </div>
-                        
-                        ))}
-                        
-                    
-                    </div>
-                )
-            )) }
-        </div>
 
-        {/* raccourci en bas */}
-        <div className="mt-auto bg-gray-300 py-[8px] rounded-xl grid grid-cols-4 ">
-            {listShortcut.map((app,index) => (
-                <div className="flex flex-col items-center">
-                                <div className={`${app.color} w-[30px] h-[30px] rounded-[22%] flex items-center justify-center shadow-sm`}>
-                                    <AnimatedIcon icon={app.json} size={25} />
-                                </div>  
-                            </div>
-            )) }
-        </div>
-      </div>
+                                <div className="absolute bottom-1 left-1 right-1 bg-gray-300 py-[8px] rounded-xl grid grid-cols-4">
+                                    {listShortcut.map((app, index) => (
+                                        <div 
+                                            key={index} 
+                                            className="flex flex-col items-center cursor-pointer"
+                                            onClick={() => setSelectedApp(app.name)}
+                                        >
+                                            <motion.div 
+                                                layoutId={`app-container-${app.name}`}
+                                                className={`${app.color} w-[30px] h-[30px] rounded-[22%] flex items-center justify-center shadow-sm overflow-hidden`}
+                                            >
+                                                <AnimatedIcon icon={app.json} size={25} />
+                                            </motion.div>  
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-    </div>
-  </div>    
-    )
+                    <AnimatePresence>
+                        {selectedApp && (
+                            <motion.div 
+                                key="app-screen"
+                                layoutId={`app-container-${selectedApp}`}
+                                className="absolute inset-0 z-50 bg-white overflow-hidden flex flex-col"
+                                initial={{ borderRadius: 20 }}
+                                animate={{ borderRadius: 0 }}
+                                exit={{ borderRadius: 20 }}
+                            >
+                                <motion.div 
+                                    className="flex-1 pt-8 relative"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.15 }}
+                                >
+                                    <button 
+                                        onClick={() => setSelectedApp(null)}
+                                        className="absolute top-2 left-2 flex items-center text-blue-500 text-[10px] z-[60]"
+                                    >
+                                        <ChevronLeft size={10} /> Retour
+                                    </button>
+                                    <SelectedAppComponent />
+                                </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </div>
+        </div>    
+    );
 }
