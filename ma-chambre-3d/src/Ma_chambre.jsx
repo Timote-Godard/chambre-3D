@@ -18,6 +18,7 @@ export function Model({ props }) {
   const [lookTarget] = useState(() => new THREE.Vector3(-0.63, 4.13, -1.49));
   const [hoveredGame, setHoveredGame] = useState(null);
   const [selectedGame, setSelectedGame] = useState(null);
+
   
 
   const myGames = [
@@ -122,6 +123,50 @@ export function Model({ props }) {
           </div>
         </Html>
       </mesh>
+
+
+      {/* 📱 LE TÉLÉPHONE */}
+      <group
+        position={nodes.Telephone.position}
+        rotation={nodes.Telephone.rotation}
+      >
+
+        <Box
+        // 👇 Remplace args par les Dimensions X, Y, Z trouvées dans Blender
+        args={[0.664778, 0.324486, 0.5]} 
+        // 👇 Comme elle est dans le groupe, 0,0,0 la place pile sur le téléphone ! 
+        // (Ajuste un tout petit peu si l'origine du tel n'est pas parfaitement au centre)
+        position={[0.2, 0, 0.2]} 
+        onPointerOver={(e) => { e.stopPropagation(); setHover("phone"); }}
+        onPointerOut={() => setHover("none")}
+        onClick={(e) => { e.stopPropagation(); setStat('phone'); }}
+      >
+        <meshBasicMaterial transparent opacity={0} />
+      </Box>
+        {/* On fouille dans le dossier et on affiche chaque morceau un par un */}
+        {nodes.Telephone.children.map((morceau, index) => (
+          <mesh 
+            key={index} 
+            geometry={morceau.geometry}
+            // On n'oublie pas la position locale de chaque petite pièce (ex: les boutons)
+            position={morceau.position}
+            rotation={morceau.rotation}
+            scale={morceau.scale}
+          >
+            {/* 🎨 L'ASTUCE MAGIQUE : Le changement de matériau conditionnel */}
+            {hovered === "phone" ? (
+              // Si survolé = On applique les couleurs originales de Blender
+              <primitive object={morceau.material} attach="material" />
+            ) : (
+              // Sinon = On applique le style Papier
+              <meshStandardMaterial color={STYLE.paper} roughness={1} />
+            )}
+
+            {/* Les contours noirs s'appliquent dans les deux cas ! */}
+            <Outlines thickness={2} color={STYLE.ink} />
+          </mesh>
+        ))}
+      </group>
 
       {/* 📚 LA BIBLIOTHEQUE */}
       <group position={nodes.Bibliotheque.position}>
