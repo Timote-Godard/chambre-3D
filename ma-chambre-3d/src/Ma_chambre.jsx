@@ -18,6 +18,7 @@ export function Model({ props }) {
   const [lookTarget] = useState(() => new THREE.Vector3(-0.63, 4.13, -1.49));
   const [hoveredGame, setHoveredGame] = useState(null);
   const [selectedGame, setSelectedGame] = useState(null);
+  const [phoneSelected, setPhoneSelected] = useState(false);
 
   
 
@@ -57,6 +58,11 @@ export function Model({ props }) {
       lookTarget.lerp(new THREE.Vector3(-4.07, 8.43, -0.81), vitesse);
       state.camera.lookAt(lookTarget);
     }
+    if (stat === 'phone') {
+      state.camera.position.lerp(new THREE.Vector3(-7.18, 5.35, 2.92), vitesse);
+      lookTarget.lerp(new THREE.Vector3(-7.49, 1.23, 2.92), vitesse);
+      state.camera.lookAt(lookTarget);
+    }
   });
 
   return (
@@ -72,7 +78,7 @@ export function Model({ props }) {
         scale={nodes.Decor_Fixe.scale}
       >
         <meshStandardMaterial color={STYLE.paper} roughness={1} polygonOffset 
-  polygonOffsetFactor={-1}/>
+          polygonOffsetFactor={-1}/>
         <Outlines thickness={2} color={STYLE.ink} angle={0} depthTest={true}/>
       </mesh>
 
@@ -126,47 +132,103 @@ export function Model({ props }) {
 
 
       {/* 📱 LE TÉLÉPHONE */}
-      <group
-        position={nodes.Telephone.position}
-        rotation={nodes.Telephone.rotation}
-      >
-
-        <Box
-        // 👇 Remplace args par les Dimensions X, Y, Z trouvées dans Blender
-        args={[0.664778, 0.324486, 0.5]} 
-        // 👇 Comme elle est dans le groupe, 0,0,0 la place pile sur le téléphone ! 
-        // (Ajuste un tout petit peu si l'origine du tel n'est pas parfaitement au centre)
-        position={[0.2, 0, 0.2]} 
-        onPointerOver={(e) => { e.stopPropagation(); setHover("phone"); }}
-        onPointerOut={() => setHover("none")}
-        onClick={(e) => { e.stopPropagation(); setStat('phone'); }}
-      >
-        <meshBasicMaterial transparent opacity={0} />
-      </Box>
-        {/* On fouille dans le dossier et on affiche chaque morceau un par un */}
-        {nodes.Telephone.children.map((morceau, index) => (
+      {phoneSelected ? (
+        <group position={nodes.Telephone.position}>
+          
+          {/* 🛡️ LE MUR DE VERRE (Pour cliquer à côté et fermer) */}
           <mesh 
-            key={index} 
-            geometry={morceau.geometry}
-            // On n'oublie pas la position locale de chaque petite pièce (ex: les boutons)
-            position={morceau.position}
-            rotation={morceau.rotation}
-            scale={morceau.scale}
+            position={[-0.5, 0, 0]} 
+            rotation={[0, Math.PI / 2, 0]} 
+            onPointerEnter={() => { document.body.style.cursor = 'alias'; }}
+            onPointerLeave={() => { document.body.style.cursor = 'auto'; }}
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              if (e.delta <= 2) {
+                // 👇 On ferme bien l'état du téléphone, pas celui des jeux
+                setPhoneSelected(false); 
+                setStat('none'); 
+              }
+            }}
           >
-            {/* 🎨 L'ASTUCE MAGIQUE : Le changement de matériau conditionnel */}
-            {hovered === "phone" ? (
-              // Si survolé = On applique les couleurs originales de Blender
-              <primitive object={morceau.material} attach="material" />
-            ) : (
-              // Sinon = On applique le style Papier
-              <meshStandardMaterial color={STYLE.paper} roughness={1} />
-            )}
-
-            {/* Les contours noirs s'appliquent dans les deux cas ! */}
-            <Outlines thickness={2} color={STYLE.ink} />
+            <planeGeometry args={[70, 50]} />
+            <meshBasicMaterial transparent opacity={0} side={THREE.DoubleSide} />
           </mesh>
-        ))}
-      </group>
+
+          {/* 📱 LE TÉLÉPHONE INTERACTIF (Flottant) */}
+          <PresentationControls cursor={false} config={{ mass: 2, tension: 500 }} snap rotation={[0, 0.3, 0]}>
+            <Float speed={5} rotationIntensity={0.5} floatIntensity={0.5}>
+              {nodes.Telephone.children.map((morceau, index) => (
+                <group key={index} position={morceau.position} rotation={morceau.rotation} scale={morceau.scale}>
+                  
+                  {/* 🤍 JUMEAU PAPIER (Caché quand sélectionné) */}
+                  <mesh geometry={morceau.geometry} visible={hovered !== "phone" && stat !== "phone"}>
+                    <meshStandardMaterial color={STYLE.paper} roughness={1} />
+                    <Outlines thickness={2} color={STYLE.ink} />
+                  </mesh>
+
+                  {/* 🎨 JUMEAU COULEUR (Toujours visible ici car stat === "phone") */}
+                  <mesh geometry={morceau.geometry} material={morceau.material} visible={hovered === "phone" || stat === "phone"}>
+                    <Outlines thickness={2} color={STYLE.ink} />
+                  </mesh>
+
+                </group>
+              ))}
+            </Float>
+          </PresentationControls>
+
+          {/* 🔗 LE BOUTON HTML */}
+          <Html position={[0, -1.5, 0]} center>
+            {/* ⚠️ Attention : Assure-toi que selectedGame existe bien quand on clique sur le téléphone, 
+                sinon mets plutôt un lien direct genre 'mailto:ton@email.com' ou ton GitHub ! */}
+            <button 
+              onClick={() => window.open(selectedGame?.url || 'https://github.com/ton-profil', '_blank')}
+              className="bg-white w-60 text-black px-6 py-2 font-bold border-4 border-black hover:bg-yellow-400 transition-colors"
+            >
+              CONTACT / PROJET
+            </button>
+          </Html>
+        </group>
+
+      ) : (
+
+        /* -------------------------------------------------------- */
+        /* 📱 TÉLÉPHONE SUR LE BUREAU (Statique)                    */
+        /* -------------------------------------------------------- */
+        <group position={nodes.Telephone.position} rotation={nodes.Telephone.rotation}>
+
+          {/* 📦 LA HITBOX */}
+          <Box
+            args={[0.664778, 0.324486, 0.5]} 
+            position={[0.2, 0, 0.2]} 
+            onPointerOver={(e) => { e.stopPropagation(); setHover("phone"); }}
+            onPointerOut={() => setHover("none")}
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              stat === "phone" ? setPhoneSelected(true) : setStat('phone'); 
+            }}
+          >
+            <meshBasicMaterial transparent opacity={0} />
+          </Box>
+
+          {/* 📱 LE VISUEL (La méthode des Jumeaux) */}
+          {nodes.Telephone.children.map((morceau, index) => (
+            <group key={index} position={morceau.position} rotation={morceau.rotation} scale={morceau.scale}>
+              
+              {/* 🤍 JUMEAU PAPIER */}
+              <mesh geometry={morceau.geometry} visible={hovered !== "phone" && stat !== "phone"}>
+                <meshStandardMaterial color={STYLE.paper} roughness={1} />
+                <Outlines thickness={2} color={STYLE.ink} />
+              </mesh>
+
+              {/* 🎨 JUMEAU COULEUR */}
+              <mesh geometry={morceau.geometry} material={morceau.material} visible={hovered === "phone" || stat === "phone"}>
+                <Outlines thickness={2} color={STYLE.ink} />
+              </mesh>
+
+            </group>
+          ))}
+        </group>
+      )}
 
       {/* 📚 LA BIBLIOTHEQUE */}
       <group position={nodes.Bibliotheque.position}>
