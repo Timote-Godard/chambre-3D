@@ -59,10 +59,22 @@ export function Model({ props }) {
       state.camera.lookAt(lookTarget);
     }
     if (stat === 'phone') {
-      state.camera.position.lerp(new THREE.Vector3(-6.18, 5.35, 2.92), vitesse);
-      lookTarget.lerp(new THREE.Vector3(-8.49, 1.23, 2.92), vitesse);
-      state.camera.lookAt(lookTarget);
-    }
+      const offset = new THREE.Vector3(0, -0.025, 0);
+
+      offset.applyEuler(nodes.Telephone.rotation);
+    // 1. On prend la position de base du téléphone
+    const phonePos = new THREE.Vector3().copy(nodes.Telephone.position);
+    
+    // 2. On y ajoute le MEME décalage que ton composant Html (-0.02 sur Y, 0.005 sur Z)
+    // Cela force la caméra à viser la vitre de l'écran et pas le centre du modèle 3D
+    const targetPos = new THREE.Vector3().copy(nodes.Telephone.position).add(offset);
+
+  state.camera.position.lerp(new THREE.Vector3(-6.18, 5.35, 2.92), vitesse);
+  
+  // 4. La caméra vise enfin le pixel central de ton écran de téléphone !
+  lookTarget.lerp(targetPos, vitesse);
+  state.camera.lookAt(lookTarget);
+  }
   });
 
   return (
@@ -134,9 +146,6 @@ export function Model({ props }) {
       {/* 📱 LE TÉLÉPHONE */}
 
 
-        /* -------------------------------------------------------- */
-        /* 📱 TÉLÉPHONE SUR LE BUREAU (Statique)                    */
-        /* -------------------------------------------------------- */
         <group position={nodes.Telephone.position} rotation={nodes.Telephone.rotation}>
 
           {/* 📦 LA HITBOX */}
@@ -174,13 +183,13 @@ export function Model({ props }) {
           pointerEvents={stat === "phone" ? "auto" : "none"}  
           transform 
           distanceFactor={0.7} 
-          position={[-0.02, 0, 0.005]} 
+          position={[0, -0.025, 0.0]} 
           rotation={[Math.PI / 2, 0, Math.PI / 2]}
         >
           {/* On ajoute une div autour de ton écran pour gérer l'animation */}
           <div 
             style={{ 
-              opacity: (hovered === "phone" || stat === "phone") ? 1 : 0,
+              opacity: (stat === "phone"  ) ? 1 : 0,
               // Sécurité supplémentaire : on désactive les clics si c'est juste survolé ou caché
               pointerEvents: stat === "phone" ? "auto" : "none" 
             }}

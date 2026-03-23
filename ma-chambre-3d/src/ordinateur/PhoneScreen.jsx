@@ -5,9 +5,10 @@ import AnimatedIcon from './AnimatedIcon';
 import Meteo from './widget/Meteo';
 import Bourse from './widget/Bourse';
 import Calendrier from './widget/Calendrier';
+import fondEcran from '../assets/phoneWallpaper.png';
 
 import cameraIcon from "../assets/IconApp/camera.json";
-import clockIcon from "../assets/IconApp/clock.json";
+import clockIcon from "../assets/IconApp/clock2.json";
 import mapsIcon from "../assets/IconApp/maps.json";
 import photoIcon from "../assets/IconApp/photo.json";
 import documentIcon from "../assets/IconApp/document.json";
@@ -26,7 +27,7 @@ import folderIcon from "../assets/IconApp/folder.json";
 
 // Importations des composants apps
 import Camera from '../app/Camera';
-import Horloge from '../app/Horloge';
+import Horloge from '../app/Horloge/Hub';
 import Maps from '../app/Maps';
 import Galerie from '../app/Galerie';
 import Document from '../app/Document';
@@ -103,11 +104,11 @@ export function PhoneScreen({ onClose }) {
 
     return (
         <div 
-            className="bg-gray-700 pointer-events-auto shadow-inner relative"
+            className="bg-gray-700 shadow-inner relative"
             style={{
                 width: '180px',
                 height: '380px',
-                clipPath: 'inset(0% round 20px)',
+                clipPath: 'inset(0% round 35px)',
                 overflow: 'hidden', 
             }}
         >
@@ -118,11 +119,18 @@ export function PhoneScreen({ onClose }) {
                         className=" absolute left-1/2 -translate-x-1/2 translate-y-1/16  w-16 h-5 bg-black rounded-full z-[100]"
                     ></div>
 
-                <div className="flex-1 relative bg-gray-100 overflow-hidden">
-                    <div className="relative pt-1 px-1 bg-slate-100 flex flex-row justify-between items-center w-full z-[10] pointer-events-none"> 
-                    <h1 className="text-[10px] pl-3 text-black">{hour}:{minute < 10 ? "0" + minute : minute}</h1>
+                <div 
+    className="flex-1 relative overflow-hidden bg-cover bg-center"
+    style={{ 
+        // 👇 On utilise la variable importée !
+        backgroundImage: `url(${fondEcran})` 
+    }}
+>
                     
-                    <div className="flex flex-row pr-1 items-center gap-[1px] text-black">
+                    <div className="relative pt-1 px-1 flex flex-row justify-between items-center w-full z-[10] pointer-events-none"> 
+                    <h1 className="text-[10px] pl-3 text-white">{hour}:{minute < 10 ? "0" + minute : minute}</h1>
+                    
+                    <div className="flex flex-row pr-1 items-center gap-[1px] text-white">
                         <Signal size={12} />
                         <Wifi size={12} />
                         <BatteryMedium size={14} />
@@ -145,7 +153,7 @@ export function PhoneScreen({ onClose }) {
                                                 {app.type === "weather" && <Meteo />}
                                                 {app.type === "money" && <Bourse />}
                                                 {app.type === "calendar" && <Calendrier />} 
-                                                <h1 className="text-[8px]">{app.name}</h1>
+                                                <h1 className="text-[8px]  text-white">{app.name}</h1>
                                             </div>
                                         ) : (
                                             <div key={index} className='grid grid-cols-2 gap-y-[2px]'> 
@@ -157,11 +165,12 @@ export function PhoneScreen({ onClose }) {
                                                     >
                                                         <motion.div 
                                                             layoutId={`app-container-${uniqueApp.name}`}
-                                                            className={`${uniqueApp.color} w-[30px] h-[30px] rounded-[22%] flex items-center justify-center shadow-sm overflow-hidden`}
+                                                            style={{ borderRadius: 8 }}
+                                                            className={`${uniqueApp.color} w-[30px] h-[30px] flex items-center justify-center shadow-sm overflow-hidden`}
                                                         >
-                                                            <AnimatedIcon icon={uniqueApp.json} size={25} />
+                                                            <AnimatedIcon icon={uniqueApp.json} size={uniqueApp.name === "Horloge" ? 33 : 25} />
                                                         </motion.div>
-                                                        <h1 className="text-[8px] mt-[1px]">{uniqueApp.name}</h1>
+                                                        <h1 className="text-[7px] mt-[1px]  text-white">{uniqueApp.name}</h1>
                                                     </div>
                                                 ))}
                                             </div>
@@ -169,7 +178,7 @@ export function PhoneScreen({ onClose }) {
                                     ))}
                                 </div>
 
-                                <div className="absolute bottom-1 left-1 right-1 bg-gray-300 py-[8px] rounded-xl grid grid-cols-4">
+                                <div className="absolute bottom-1 left-1 right-1 bg-gray-300/50 py-[8px] rounded-xl grid grid-cols-4">
                                     {listShortcut.map((app, index) => (
                                         <div 
                                             key={index} 
@@ -178,7 +187,8 @@ export function PhoneScreen({ onClose }) {
                                         >
                                             <motion.div 
                                                 layoutId={`app-container-${app.name}`}
-                                                className={`${app.color} w-[30px] h-[30px] rounded-[22%] flex items-center justify-center shadow-sm overflow-hidden`}
+                                                style={{ borderRadius: 8 }}
+                                                className={`${app.color} w-[30px] h-[30px] flex items-center justify-center shadow-sm overflow-hidden`}
                                             >
                                                 <AnimatedIcon icon={app.json} size={25} />
                                             </motion.div>  
@@ -195,19 +205,17 @@ export function PhoneScreen({ onClose }) {
                                 key="app-screen"
                                 layoutId={`app-container-${selectedApp}`}
                                 className="absolute inset-0 z-50 bg-white overflow-hidden flex flex-col"
-                                initial={{ borderRadius: 20 }}
-                                animate={{ borderRadius: 0 }}
-                                exit={{ borderRadius: 20 }}
+                                style={{ borderRadius: 0 }}
                             >
                                 <motion.div 
-                                    className="flex-1 pt-8 relative"
+                                    className="flex-1 relative"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ delay: 0.15 }}
                                 >
                                     <button 
                                         onClick={() => setSelectedApp(null)}
-                                        className="absolute top-2 left-2 flex items-center text-blue-500 text-[10px] z-[60]"
+                                        className="absolute top-2 left-2 flex cursor-pointer items-center text-blue-500 text-[10px] z-[60]"
                                     >
                                         <ChevronLeft size={10} /> Retour
                                     </button>

@@ -1,0 +1,22 @@
+name: Déploiement Chambre
+
+on:
+  push:
+    branches:
+      - main # ou master, selon ta branche par défaut
+
+jobs:
+  deploy:
+    runs-on: self-hosted # Cible ton vieux PC
+    
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v3
+
+      - name: Lancement de Docker Compose
+        run: |
+          docker compose down
+          docker compose up -d --build
+          
+      - name: Nettoyage du disque (Prune)
+        run: docker image prune -af
