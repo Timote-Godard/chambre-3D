@@ -4,3 +4,6 @@ services:
     ports:
       - "8081:80"
     restart: always
+    labels:
+      - "dashboard.name=Chambre 3D"
+      - "dashboard.url=https://chambre.timote.ovh"
