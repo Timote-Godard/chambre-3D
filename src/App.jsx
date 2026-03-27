@@ -109,7 +109,7 @@ function DynamicLighting({time}) {
         intensity={roomLightIntensity} 
         color={roomLightColor}
         distance={20} // L'écran n'éclaire pas très loin
-        decay={3} // La lumière s'estompe très vite dans le noir
+        decay={3}
         castShadow
       />
     </>
