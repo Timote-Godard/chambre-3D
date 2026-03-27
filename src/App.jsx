@@ -105,7 +105,7 @@ function DynamicLighting({time}) {
 
       {/* 💡 L'AMPOULE DE LA CHAMBRE */}
       <pointLight 
-        position={[-8, 5, 1.2]} // 👈 J'ai avancé un peu le Z (1.2 au lieu de 0.84) pour le décoller de l'écran
+        position={[-8, 5, 1.2]} 
         intensity={roomLightIntensity} 
         color={roomLightColor}
         distance={20} 
