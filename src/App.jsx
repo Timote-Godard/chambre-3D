@@ -108,7 +108,7 @@ function DynamicLighting({time}) {
         position={[-8, 5, 1.2]} // 👈 J'ai avancé un peu le Z (1.2 au lieu de 0.84) pour le décoller de l'écran
         intensity={roomLightIntensity} 
         color={roomLightColor}
-        distance={20} // L'écran n'éclaire pas très loin
+        distance={20} 
         decay={3}
         castShadow
       />
